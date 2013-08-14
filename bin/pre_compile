@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# fail fast
+set -o errexit
+set -o nounset
+set -o pipefail
+
+# The location of the pre-compiled curl binary.
+VENDORED_CURL=http://s3.amazonaws.com/alan-vendor/vendor-curl-7.31.0-1.tar.gz
+
+# If pycurl exists within requirements, use vendored curl.
+if grep -Eiq "^\s*pycurl" requirements.txt; then
+  echo "-----> Noticed pycurl. Bootstrapping curl."
+
+  if [ ! -f .heroku/vendor/bin/curl ]; then
+    # Download and extract curl into target vendor directory.
+    mkdir -p .heroku
+    curl -fsSLo .heroku/tmp-curl.tar.gz $VENDORED_CURL
+    tar -C .heroku -zxvf .heroku/tmp-curl.tar.gz > /dev/null
+    rm .heroku/tmp-curl.tar.gz
+  fi
+fi
